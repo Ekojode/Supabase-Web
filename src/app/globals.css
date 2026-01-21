@@ -1,26 +1,176 @@
 @import "tailwindcss";
 
+@theme {
+  /* Common Palette / Tokens (Can be referenced by themes) */
+  --color-subby-yellow: #FACC15;
+  --color-subby-emerald: #10B981;
+  --color-subby-pink: #FFC0CB;
+  --color-subby-blue: #A7C7E7;
+
+  --font-heading: var(--font-space-grotesk), sans-serif;
+  --font-body: var(--font-dm-sans), sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
+}
+
+/* Base Theme (Neo-Brutalist - Default) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F4F3EF;
+  --foreground: #000000;
+  --card-bg: #FFFFFF;
+  --border-width: 3px;
+  --border-color: #000000;
+  --radius-card: 0px;
+  --radius-btn: 0px;
+  --shadow-base: 4px 4px 0px #000000;
+  --shadow-hover: 2px 2px 0px #000000;
+  --shadow-active: 0px 0px 0px #000000;
+  --btn-font-weight: 900;
+  --heading-transform: uppercase;
+  --heading-tracking: 0em;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Swiss Editorial (Premium Fintech) */
+[data-theme='swiss'] {
+  --background: #FFFFFF;
+  --foreground: #111111;
+  /* Almost Black */
+  --card-bg: #FFFFFF;
+  --border-width: 1px;
+  --border-color: #E6E6E6;
+  /* Very subtle grey */
+  --radius-card: 0px;
+  --radius-btn: 9999px;
+
+  /* Ambient Light Shadow */
+  --shadow-base: 0 20px 80px -20px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 40px 100px -20px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.03);
+  --shadow-active: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+
+  --btn-font-weight: 500;
+  --heading-transform: none;
+  --heading-tracking: -0.03em;
+  /* Tight Swiss tracking */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Soft Pop (True Claymorphism) */
+[data-theme='soft'] {
+  --background: #F0F4F8;
+  /* Light Blue-ish White for clay contrast */
+  --foreground: #5B4B8A;
+  /* Muted Purple */
+  --card-bg: #F0F4F8;
+  --border-width: 4px;
+  /* White border for 'inflated' look */
+  --border-color: #FFFFFF;
+  --radius-card: 48px;
+  /* Extreme rounding */
+  --radius-btn: 24px;
+
+  /* Multi-Layer Clay Shadow */
+  --shadow-base:
+    12px 12px 24px #D1D9E6,
+    -12px -12px 24px #FFFFFF;
+
+  --shadow-hover:
+    16px 16px 32px #D1D9E6,
+    -16px -16px 32px #FFFFFF;
+
+  --shadow-active:
+    inset 6px 6px 12px #D1D9E6,
+    inset -6px -6px 12px #FFFFFF;
+
+  --btn-font-weight: 800;
+  --heading-transform: none;
+  --heading-tracking: -0.01em;
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.5s ease;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    text-transform: var(--heading-transform);
+    font-weight: 700;
+    letter-spacing: var(--heading-tracking);
+  }
+
+  /* Grid Overlay for Swiss Theme */
+  [data-theme='swiss'] body {
+    background-image:
+      linear-gradient(#f0f0f0 1px, transparent 1px),
+      linear-gradient(90deg, #f0f0f0 1px, transparent 1px);
+    background-size: 80px 80px;
+    background-position: center top;
+  }
+
+  /* Neo Noise Overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.05;
+    z-index: 9999;
+    background-image: url("/noise.svg");
+    background-repeat: repeat;
+  }
+
+  [data-theme='swiss'] body::before,
+  [data-theme='soft'] body::before {
+    opacity: 0;
   }
 }
 
-body {
-  background: var(--background);
+/* Semantic Utilities */
+.neo-border {
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-card);
+}
+
+.neo-shadow {
+  box-shadow: var(--shadow-base);
+}
+
+.neo-button {
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-btn);
+  box-shadow: var(--shadow-base);
+  padding: 0.75rem 1.75rem;
+  text-transform: var(--heading-transform);
+  font-weight: var(--btn-font-weight);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  /* Silkier transition */
+  background-color: var(--card-bg);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+.neo-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.neo-button:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-active);
+}
+
+/* Helper for Clay Text color if needed */
+[data-theme='soft'] .text-highlight {
+  color: #4C1D95;
+  text-shadow: 2px 2px 0px #FFFFFF;
 }
