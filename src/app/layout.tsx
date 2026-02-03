@@ -1,27 +1,23 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, DM_Sans, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/context/ThemeContext";
-import ThemeSwitcher from "@/components/ThemeSwitcher";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+// Premium, modern font pairing
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-heading",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const inter = Inter({
+  variable: "--font-body",
   subsets: ["latin"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "SUBBY | Split Subscription Costs in Nigeria",
-  description: "Join the waitlist for Subby, the easiest way to share subscription costs for Netflix, Spotify, Adobe, and more.",
+  title: "Subbay | Split Subscription Costs in Nigeria",
+  description: "Join Subbay to share subscription costs for Netflix, Spotify, Adobe, and more with friends and family.",
 };
 
 export default function RootLayout({
@@ -32,12 +28,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${spaceGrotesk.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${plusJakarta.variable} ${inter.variable} antialiased`}
       >
-        <ThemeProvider>
-          {children}
-          <ThemeSwitcher />
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );
