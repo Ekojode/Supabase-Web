@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 
 export default function VibeCalculator() {
-    const [people, setPeople] = useState(3);
+    const [people, setPeople] = useState(2);
     const basePrice = 5500; // Average Netflix Premium Price
     const splitPrice = Math.round(basePrice / people);
     const savings = basePrice - splitPrice;
