@@ -6,7 +6,7 @@ import { Plus, Minus } from "lucide-react";
 
 const FAQ_ITEMS = [
     {
-        q: "How does Subbay saving work?",
+        q: "How does Subb Bay saving work?",
         a: "We group 5-6 verified users into a single family plan. Instead of paying ₦4,500/mo alone, you split it and pay ~₦1,100/mo.",
     },
     {

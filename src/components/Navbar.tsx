@@ -40,7 +40,7 @@ export default function Navbar() {
                             S
                         </div>
                         <span className="text-xl font-bold text-[#1A1A2E]">
-                            Subbay
+                            Subb Bay
                         </span>
                     </Link>
 

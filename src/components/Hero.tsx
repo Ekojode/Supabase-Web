@@ -53,7 +53,7 @@ export default function Hero() {
                     transition={{ duration: 0.8, delay: 0.2 }}
                     className="text-base md:text-lg text-[#3A5369]/70 font-medium mb-12 max-w-xl mx-auto leading-relaxed"
                 >
-                    Subbay helps you share premium subscriptions with friends and family.
+                    Subb Bay helps you share premium subscriptions with friends and family.
                     Create groups, split costs, and get access instantly.
                 </motion.p>
 

@@ -28,7 +28,7 @@ export default function Home() {
                 <div className="w-10 h-10 rounded-xl bg-[#1A1A2E] flex items-center justify-center">
                   <span className="text-white font-bold text-lg">S</span>
                 </div>
-                <span className="text-2xl font-bold text-[#1A1A2E]">Subbay</span>
+                <span className="text-2xl font-bold text-[#1A1A2E]">Subb Bay</span>
               </div>
               <p className="text-[#3A5369]/70 max-w-sm text-sm leading-relaxed">
                 The smart way to share subscriptions. <br />
@@ -58,7 +58,7 @@ export default function Home() {
 
           <div className="border-t border-gray-100 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-[#3A5369]/40 font-medium">
-              © 2026 Subbay Inc.
+              © 2026 Subb Bay Inc.
             </div>
             <div className="text-sm text-[#3A5369]/40 font-medium flex items-center gap-2">
               <span>Lagos, NG</span>

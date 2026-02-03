@@ -263,7 +263,7 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                                         How can we reach you?
                                     </h3>
                                     <p className="text-sm text-[#3A5369]/60 mb-6">
-                                        We'll notify you when Subbay launches and your group goes live
+                                        We'll notify you when Subb Bay launches and your group goes live
                                     </p>
 
                                     <div className="space-y-4 mb-6">
@@ -406,7 +406,7 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                                         </p>
                                     )}
                                     <p className="text-sm text-[#3A5369]/50 mb-6">
-                                        We'll reach out to <span className="font-semibold">{formData.email || formData.phone}</span> when Subbay launches.
+                                        We'll reach out to <span className="font-semibold">{formData.email || formData.phone}</span> when Subb Bay launches.
                                     </p>
                                     <button
                                         onClick={resetAndClose}

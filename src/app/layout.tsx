@@ -16,8 +16,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Subbay | Split Subscription Costs in Nigeria",
-  description: "Join Subbay to share subscription costs for Netflix, Spotify, Adobe, and more with friends and family.",
+  title: "Subb Bay | Split Subscription Costs in Nigeria",
+  description: "Join Subb Bay to share subscription costs for Netflix, Spotify, Adobe, and more with friends and family.",
 };
 
 export default function RootLayout({
