@@ -38,7 +38,7 @@ export default function HowItWorks() {
                             key={step.id}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
+                            viewport={{ once: true, margin: "-50px" }}
                             transition={{ delay: i * 0.1, duration: 0.5 }}
                             whileHover={{ y: -5 }}
                             className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300 relative group"

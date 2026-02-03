@@ -53,7 +53,7 @@ export default function BrowseGroups() {
                                 key={app.name}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
+                                viewport={{ once: true, margin: "-50px" }}
                                 transition={{ delay: i * 0.1 }}
                                 className="bg-white rounded-xl p-6 border border-gray-100 hover:border-gray-300 transition-all duration-300 hover:shadow-lg group flex flex-col justify-between h-full"
                             >

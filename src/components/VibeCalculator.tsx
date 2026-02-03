@@ -76,7 +76,8 @@ export default function VibeCalculator() {
                             <motion.div
                                 key={splitPrice}
                                 initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
+                                whileInView={{ scale: 1, opacity: 1 }}
+                                viewport={{ once: true, margin: "-50px" }}
                                 className="text-5xl md:text-6xl font-bold text-[#1A1A2E] tracking-tight"
                             >
                                 <span className="text-3xl align-top text-[#3A5369]/40 font-medium mr-1">₦</span>
@@ -93,7 +94,8 @@ export default function VibeCalculator() {
                             <motion.div
                                 key={savings}
                                 initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
+                                whileInView={{ scale: 1, opacity: 1 }}
+                                viewport={{ once: true, margin: "-50px" }}
                                 className="text-5xl md:text-6xl font-bold text-[#4CBBB9] tracking-tight"
                             >
                                 <span className="text-3xl align-top text-white/40 font-medium mr-1">₦</span>
