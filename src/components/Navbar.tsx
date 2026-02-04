@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, useScroll } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import SubbBayLogo from "./SubbBayLogo";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -35,13 +36,8 @@ export default function Navbar() {
                 <div className="flex items-center justify-between">
 
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="w-9 h-9 rounded-xl bg-[#1A1A2E] flex items-center justify-center text-white font-bold text-lg">
-                            S
-                        </div>
-                        <span className="text-xl font-bold text-[#1A1A2E]">
-                            Subb Bay
-                        </span>
+                    <Link href="/">
+                        <SubbBayLogo size="sm" />
                     </Link>
 
                     {/* Desktop Nav */}

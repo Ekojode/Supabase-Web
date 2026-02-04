@@ -5,6 +5,7 @@ import BrowseGroups from "@/components/BrowseGroups";
 import VibeCalculator from "@/components/VibeCalculator";
 import FAQ from "@/components/FAQ";
 import WaitlistTicket from "@/components/WaitlistTicket";
+import SubbBayLogo from "@/components/SubbBayLogo";
 
 export default function Home() {
   return (
@@ -24,11 +25,8 @@ export default function Home() {
 
             {/* Brand */}
             <div className="md:col-span-2">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-[#1A1A2E] flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">S</span>
-                </div>
-                <span className="text-2xl font-bold text-[#1A1A2E]">Subb Bay</span>
+              <div className="mb-6">
+                <SubbBayLogo size="md" />
               </div>
               <p className="text-[#3A5369]/70 max-w-sm text-sm leading-relaxed">
                 The smart way to share subscriptions. <br />
