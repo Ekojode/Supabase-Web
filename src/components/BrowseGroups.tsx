@@ -86,11 +86,42 @@ export default function BrowseGroups() {
         setCurrentSlide(index);
     };
 
-    const handleReserve = (appName: string) => {
-        if (email) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    const handleReserve = async (appName: string) => {
+        if (!email) return;
+
+        setIsLoading(true);
+        setError("");
+
+        try {
+            const currentApp = APPS.find(a => a.name === appName);
+            // Default to 4 slots if not precisely matched
+            const slots = currentApp?.slots.match(/\d+/) ? parseInt(currentApp.slots.match(/\d+/)![0]) : 4;
+
+            const response = await fetch('/api/groups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    service_name: appName,
+                    slots: slots
+                }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Something went wrong');
+            }
+
             setSubmitted([...submitted, appName]);
             setReserveModal(null);
             setEmail("");
+        } catch (err: any) {
+            setError(err.message || 'Failed to reserve spot. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -291,17 +322,23 @@ export default function BrowseGroups() {
                                 className="w-full p-4 border border-gray-200 rounded-xl mb-4 focus:outline-none focus:border-[#1A1A2E] focus:ring-1 focus:ring-[#1A1A2E] transition-colors"
                             />
 
+                            {error && (
+                                <div className="p-3 mb-4 bg-red-50 border border-red-100 rounded-lg">
+                                    <p className="text-sm text-red-600 font-medium">{error}</p>
+                                </div>
+                            )}
+
                             <button
                                 onClick={() => handleReserve(reserveModal!)}
-                                disabled={!email}
-                                className="w-full py-4 bg-[#1A1A2E] text-white rounded-xl font-bold hover:bg-[#2D2D44] disabled:opacity-50 transition-colors"
+                                disabled={!email || isLoading}
+                                className="w-full py-4 bg-[#1A1A2E] text-white rounded-xl font-bold hover:bg-[#2D2D44] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
-                                Notify Me
+                                {isLoading ? "Processing..." : "Notify Me"}
                             </button>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </section >
+        </section>
     );
 }

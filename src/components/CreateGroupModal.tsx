@@ -21,6 +21,8 @@ const SUBSCRIPTION_OPTIONS = [
 
 export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
     const [step, setStep] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
     const [formData, setFormData] = useState({
         subscription: "",
         customName: "",
@@ -58,9 +60,37 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
         setFormData({ ...formData, friends: newFriends });
     };
 
-    const handleSubmit = () => {
-        console.log("Group created:", formData);
-        setStep(5);
+    const handleSubmit = async () => {
+        setIsLoading(true);
+        setError("");
+
+        try {
+            const response = await fetch('/api/groups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: formData.email,
+                    phone: formData.phone,
+                    service_name: formData.subscription,
+                    custom_name: formData.subscription === "Other" ? formData.customName : null,
+                    // Pass the expected price as a string (e.g. "₦300")
+                    expected_price: formData.subscription === "Other" ? formData.price : null,
+                    slots: formData.slots,
+                    friends_invited: formData.friends.filter(f => f.trim() !== '')
+                }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Something went wrong');
+            }
+
+            setStep(5); // Success step
+        } catch (err: any) {
+            setError(err.message || 'Failed to create group. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const resetAndClose = () => {

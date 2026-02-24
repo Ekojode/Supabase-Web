@@ -8,13 +8,39 @@ export default function WaitlistTicket() {
     const [step, setStep] = useState<"form" | "referrals" | "success">("form");
     const [formData, setFormData] = useState({ email: "", phone: "" });
     const [referrals, setReferrals] = useState<string[]>([""]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setStep("referrals");
+        setIsLoading(true);
+        setError("");
+
+        try {
+            const response = await fetch('/api/waitlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: formData.email, phone: formData.phone }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Something went wrong');
+            }
+
+            setStep("referrals");
+        } catch (err: any) {
+            setError(err.message || 'Failed to join waitlist. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleReferralSubmit = () => {
+    const handleReferralSubmit = async () => {
+        setIsLoading(true);
+        // We aren't actively doing a real backend submit for referrals yet, so we just simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+        setIsLoading(false);
         setStep("success");
     };
 
@@ -107,10 +133,11 @@ export default function WaitlistTicket() {
 
                         <button
                             onClick={handleReferralSubmit}
-                            className="w-full bg-[#1A1A2E] text-white font-bold py-4 rounded-xl hover:bg-[#2D2D44] transition-all flex items-center justify-center gap-2"
+                            disabled={isLoading}
+                            className="w-full bg-[#1A1A2E] text-white font-bold py-4 rounded-xl hover:bg-[#2D2D44] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            {referrals.filter(r => r).length > 0 ? "Send Invites" : "Skip"}
-                            <ArrowRight size={18} />
+                            {isLoading ? "Processing..." : (referrals.filter(r => r).length > 0 ? "Send Invites" : "Skip")}
+                            {!isLoading && <ArrowRight size={18} />}
                         </button>
                     </motion.div>
                 </div>
@@ -187,12 +214,19 @@ export default function WaitlistTicket() {
                                     </div>
                                 </div>
 
+                                {error && (
+                                    <div className="p-3 bg-red-50 border border-red-100 rounded-lg">
+                                        <p className="text-sm text-red-600 font-medium">{error}</p>
+                                    </div>
+                                )}
+
                                 <button
                                     type="submit"
-                                    className="w-full bg-[#1A1A2E] text-white font-bold py-4 rounded-xl hover:bg-[#2D2D44] hover:shadow-lg hover:translate-y-[-1px] transition-all flex items-center justify-center gap-2 mt-2"
+                                    disabled={isLoading}
+                                    className="w-full bg-[#1A1A2E] text-white font-bold py-4 rounded-xl hover:bg-[#2D2D44] hover:shadow-lg hover:translate-y-[-1px] transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
-                                    Get Early Access
-                                    <ArrowRight size={18} />
+                                    {isLoading ? "Processing..." : "Get Early Access"}
+                                    {!isLoading && <ArrowRight size={18} />}
                                 </button>
                             </form>
                         </div>
