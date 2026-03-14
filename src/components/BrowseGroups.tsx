@@ -71,7 +71,7 @@ const APPS = [
 export default function BrowseGroups() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [reserveModal, setReserveModal] = useState<string | null>(null);
-    const [email, setEmail] = useState("");
+    const [duration, setDuration] = useState(6);
     const [submitted, setSubmitted] = useState<string[]>([]);
 
     const nextSlide = () => {
@@ -90,34 +90,34 @@ export default function BrowseGroups() {
     const [error, setError] = useState("");
 
     const handleReserve = async (appName: string) => {
-        if (!email) return;
-
         setIsLoading(true);
         setError("");
 
         try {
             const currentApp = APPS.find(a => a.name === appName);
-            // Default to 4 slots if not precisely matched
             const slots = currentApp?.slots.match(/\d+/) ? parseInt(currentApp.slots.match(/\d+/)![0]) : 4;
 
-            const response = await fetch('/api/groups', {
+            const response = await fetch('/api/waitlist', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    email: email,
                     service_name: appName,
-                    slots: slots
+                    slots: slots,
+                    duration: duration
                 }),
             });
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
                 const data = await response.json();
                 throw new Error(data.error || 'Something went wrong');
             }
 
             setSubmitted([...submitted, appName]);
             setReserveModal(null);
-            setEmail("");
         } catch (err: any) {
             setError(err.message || 'Failed to reserve spot. Please try again.');
         } finally {
@@ -216,7 +216,7 @@ export default function BrowseGroups() {
                                             className="group w-full py-4 rounded-xl bg-[#4CBBB9] text-white font-bold text-base hover:bg-[#3AA8A6] hover:shadow-lg hover:shadow-[#4CBBB9]/25 transition-all flex items-center justify-center gap-3"
                                         >
                                             <Bell size={18} className="group-hover:animate-pulse" />
-                                            Notify Me
+                                            Join Waitlist
                                         </button>
                                     )}
                                 </div>
@@ -292,7 +292,10 @@ export default function BrowseGroups() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                        onClick={() => setReserveModal(null)}
+                        onClick={() => {
+                            setReserveModal(null);
+                            setDuration(6);
+                        }}
                     >
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0 }}
@@ -305,35 +308,50 @@ export default function BrowseGroups() {
                                 <h3 className="text-xl font-bold text-[#1A1A2E]">
                                     Reserve {reserveModal}
                                 </h3>
-                                <button onClick={() => setReserveModal(null)}>
+                                <button onClick={() => {
+                                    setReserveModal(null);
+                                    setDuration(6);
+                                }}>
                                     <X size={20} className="text-gray-400 hover:text-gray-600" />
                                 </button>
                             </div>
 
                             <p className="text-sm text-[#3A5369]/70 mb-4">
-                                Enter your email to be notified when {reserveModal} groups become available.
+                                Select your desired commitment duration to be matched with a group.
                             </p>
 
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="you@example.com"
-                                className="w-full p-4 border border-gray-200 rounded-xl mb-4 focus:outline-none focus:border-[#1A1A2E] focus:ring-1 focus:ring-[#1A1A2E] transition-colors"
-                            />
+                            <div className="mb-4">
+                                <label className="block text-xs font-bold uppercase tracking-widest text-[#3A5369]/60 mb-2 ml-1">
+                                    Desired Commitment
+                                </label>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {[3, 6, 9, 12].map((dur) => (
+                                        <button
+                                            key={dur}
+                                            onClick={() => setDuration(dur)}
+                                            className={`py-2 rounded-xl border-2 text-sm font-semibold transition-all ${duration === dur
+                                                ? "border-[#4CBBB9] bg-[#4CBBB9]/10 text-[#4CBBB9]"
+                                                : "border-gray-100 text-[#3A5369] hover:border-gray-200"
+                                                }`}
+                                        >
+                                            {dur} mo
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
                             {error && (
-                                <div className="p-3 mb-4 bg-red-50 border border-red-100 rounded-lg">
+                                <div className="p-3 mt-4 mb-4 bg-red-50 border border-red-100 rounded-lg">
                                     <p className="text-sm text-red-600 font-medium">{error}</p>
                                 </div>
                             )}
 
                             <button
                                 onClick={() => handleReserve(reserveModal!)}
-                                disabled={!email || isLoading}
-                                className="w-full py-4 bg-[#1A1A2E] text-white rounded-xl font-bold hover:bg-[#2D2D44] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                disabled={isLoading}
+                                className="w-full mt-4 py-4 bg-[#1A1A2E] text-white rounded-xl font-bold hover:bg-[#2D2D44] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
-                                {isLoading ? "Processing..." : "Notify Me"}
+                                {isLoading ? "Processing..." : "Commit & Join"}
                             </button>
                         </motion.div>
                     </motion.div>

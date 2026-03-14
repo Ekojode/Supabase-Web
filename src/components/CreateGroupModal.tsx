@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Users, Check, Plus, Trash2, ArrowRight, ArrowLeft, Mail, Phone } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { NetflixLogo, SpotifyLogo, YoutubeLogo, AdobeLogo, CanvaLogo, GenericSubIcon } from "./BrandLogos";
 
 interface CreateGroupModalProps {
@@ -20,6 +21,7 @@ const SUBSCRIPTION_OPTIONS = [
 ];
 
 export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
+    const router = useRouter();
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
@@ -27,9 +29,8 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
         subscription: "",
         customName: "",
         price: "",
+        duration: 6,
         slots: 4,
-        email: "",
-        phone: "",
         friends: [""],
     });
 
@@ -37,7 +38,7 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
         setFormData({
             ...formData,
             subscription: sub.name,
-            price: sub.price === "Custom" ? "" : sub.price,
+            price: sub.price === "Custom" ? "" : sub.price, // Leave unmodified so it's sent to the API
         });
     };
 
@@ -69,23 +70,26 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    email: formData.email,
-                    phone: formData.phone,
                     service_name: formData.subscription,
                     custom_name: formData.subscription === "Other" ? formData.customName : null,
-                    // Pass the expected price as a string (e.g. "₦300")
-                    expected_price: formData.subscription === "Other" ? formData.price : null,
+                    // Pass the expected total price as a string (e.g. "₦5,500")
+                    expected_price: formData.price,
+                    duration: formData.duration,
                     slots: formData.slots,
                     friends_invited: formData.friends.filter(f => f.trim() !== '')
                 }),
             });
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
                 const data = await response.json();
                 throw new Error(data.error || 'Something went wrong');
             }
 
-            setStep(5); // Success step
+            setStep(4); // Success step
         } catch (err: any) {
             setError(err.message || 'Failed to create group. Please try again.');
         } finally {
@@ -94,20 +98,23 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
     };
 
     const resetAndClose = () => {
+        const wasSuccess = step === 4;
         setStep(1);
         setFormData({
             subscription: "",
             customName: "",
             price: "",
+            duration: 6,
             slots: 4,
-            email: "",
-            phone: "",
             friends: [""],
         });
         onClose();
+        if (wasSuccess) {
+            router.refresh(); // Refresh the page to show the new group
+        }
     };
 
-    const canProceedFromStep3 = formData.email.trim() !== "" || formData.phone.trim() !== "";
+    const canProceedFromStep3 = true; // Was previously dependent on email/phone
 
     if (!isOpen) return null;
 
@@ -135,7 +142,7 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                             </div>
                             <div>
                                 <h2 className="text-xl font-bold text-[#1A1A2E]">Create a Group</h2>
-                                <p className="text-sm text-[#3A5369]/60">Step {Math.min(step, 4)} of 4</p>
+                                <p className="text-sm text-[#3A5369]/60">Step {Math.min(step, 3)} of 3</p>
                             </div>
                         </div>
                         <button
@@ -151,7 +158,7 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                         <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
                             <motion.div
                                 initial={{ width: 0 }}
-                                animate={{ width: step === 5 ? "100%" : `${(step / 4) * 100}%` }}
+                                animate={{ width: step === 4 ? "100%" : `${(step / 3) * 100}%` }}
                                 className="h-full bg-[#4CBBB9] rounded-full"
                             />
                         </div>
@@ -168,6 +175,11 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
                                 >
+                                    {error && (
+                                        <div className="p-3 mb-4 bg-red-50 border border-red-100 rounded-lg">
+                                            <p className="text-sm text-red-600 font-medium">{error}</p>
+                                        </div>
+                                    )}
                                     <h3 className="text-lg font-semibold text-[#1A1A2E] mb-4">
                                         What subscription do you want to share?
                                     </h3>
@@ -229,13 +241,35 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                                     exit={{ opacity: 0, x: -20 }}
                                 >
                                     <h3 className="text-lg font-semibold text-[#1A1A2E] mb-4">
-                                        How many slots are available?
+                                        Group Terms & Details
                                     </h3>
+
+                                    <div className="mb-6">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[#3A5369] font-medium">Commitment Duration</span>
+                                            <span className="text-lg font-bold text-[#4CBBB9]">{formData.duration} Months</span>
+                                        </div>
+                                        <p className="text-xs text-[#3A5369]/60 mb-4">How long members will be locked in to share this subscription.</p>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {[3, 6, 9, 12].map((dur) => (
+                                                <button
+                                                    key={dur}
+                                                    onClick={() => setFormData({ ...formData, duration: dur })}
+                                                    className={`py-2 rounded-xl border-2 text-sm font-semibold transition-all ${formData.duration === dur
+                                                        ? "border-[#4CBBB9] bg-[#4CBBB9]/10 text-[#4CBBB9]"
+                                                        : "border-gray-100 text-[#3A5369] hover:border-gray-200"
+                                                        }`}
+                                                >
+                                                    {dur} mo
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
 
                                     <div className="mb-8">
                                         <div className="flex items-center justify-between mb-4">
-                                            <span className="text-[#3A5369]">Number of slots</span>
-                                            <span className="text-2xl font-bold text-[#4CBBB9]">{formData.slots}</span>
+                                            <span className="text-[#3A5369] font-medium">Number of slots</span>
+                                            <span className="text-xl font-bold text-[#4CBBB9]">{formData.slots}</span>
                                         </div>
                                         <input
                                             type="range"
@@ -255,13 +289,23 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                                         </div>
                                     </div>
 
-                                    <div className="bg-gray-50 rounded-2xl p-4 mb-6">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-[#3A5369]">Price per slot</span>
-                                            <span className="text-xl font-bold text-[#4CBBB9]">
+                                    <div className="bg-[#4CBBB9]/5 rounded-2xl p-4 mb-6 border border-[#4CBBB9]/20">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-[#3A5369] text-sm">Monthly price per slot</span>
+                                            <span className="font-bold text-[#4CBBB9]">
                                                 ₦{Math.round(parseInt(formData.price.replace(/[^\d]/g, "") || "0") / formData.slots).toLocaleString()}/mo
                                             </span>
                                         </div>
+                                        <div className="w-full h-px bg-[#4CBBB9]/20 my-2"></div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[#1A1A2E] font-medium">Upfront Commitment ({formData.duration} mo)</span>
+                                            <span className="text-xl font-bold text-[#1A1A2E]">
+                                                ₦{Math.round((parseInt(formData.price.replace(/[^\d]/g, "") || "0") / formData.slots) * formData.duration).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <p className="text-[10px] text-[#3A5369]/60 mt-2">
+                                            Members will fund their wallet with this amount to lock in for the duration.
+                                        </p>
                                     </div>
 
                                     <div className="flex gap-3">
@@ -281,77 +325,10 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                                 </motion.div>
                             )}
 
-                            {/* Step 3: YOUR Contact Info */}
+                            {/* Step 3: Invite Friends */}
                             {step === 3 && (
                                 <motion.div
                                     key="step3"
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                >
-                                    <h3 className="text-lg font-semibold text-[#1A1A2E] mb-2">
-                                        How can we reach you?
-                                    </h3>
-                                    <p className="text-sm text-[#3A5369]/60 mb-6">
-                                        We'll notify you when Subb Bay launches and your group goes live
-                                    </p>
-
-                                    <div className="space-y-4 mb-6">
-                                        <div>
-                                            <label className="block text-xs font-bold uppercase tracking-widest text-[#3A5369]/60 mb-2 ml-1">
-                                                Email Address
-                                            </label>
-                                            <div className="relative">
-                                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                                                <input
-                                                    type="email"
-                                                    value={formData.email}
-                                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                    placeholder="you@example.com"
-                                                    className="w-full bg-gray-50 border border-gray-200 text-[#1A1A2E] p-4 !pl-12 rounded-lg focus:outline-none focus:border-[#1A1A2E] focus:ring-1 focus:ring-[#1A1A2E] transition-all placeholder:text-gray-300 font-medium"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-xs font-bold uppercase tracking-widest text-[#3A5369]/60 mb-2 ml-1">
-                                                Phone Number
-                                            </label>
-                                            <div className="relative">
-                                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                                                <input
-                                                    type="tel"
-                                                    value={formData.phone}
-                                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                                    placeholder="+234 XXX XXX XXXX"
-                                                    className="w-full bg-gray-50 border border-gray-200 text-[#1A1A2E] p-4 !pl-12 rounded-lg focus:outline-none focus:border-[#1A1A2E] focus:ring-1 focus:ring-[#1A1A2E] transition-all placeholder:text-gray-300 font-medium"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={() => setStep(2)}
-                                            className="px-6 py-4 text-[#1A1A2E] font-bold hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-2"
-                                        >
-                                            <ArrowLeft size={18} /> Back
-                                        </button>
-                                        <button
-                                            onClick={() => setStep(4)}
-                                            disabled={!canProceedFromStep3}
-                                            className="flex-1 bg-[#1A1A2E] text-white font-bold py-4 rounded-xl hover:bg-[#2D2D44] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                                        >
-                                            Continue <ArrowRight size={18} />
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            {/* Step 4: Invite Friends */}
-                            {step === 4 && (
-                                <motion.div
-                                    key="step4"
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
@@ -404,19 +381,20 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                                         </button>
                                         <button
                                             onClick={handleSubmit}
-                                            className="subbay-btn flex-1 flex items-center justify-center gap-2"
+                                            disabled={isLoading}
+                                            className="subbay-btn flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {formData.friends.filter(f => f).length > 0 ? "Create Group" : "Skip & Create"}
-                                            <Check size={18} />
+                                            {isLoading ? "Processing..." : (formData.friends.filter(f => f).length > 0 ? "Create Group" : "Skip & Create")}
+                                            {!isLoading && <Check size={18} />}
                                         </button>
                                     </div>
                                 </motion.div>
                             )}
 
-                            {/* Step 5: Success */}
-                            {step === 5 && (
+                            {/* Step 4: Success */}
+                            {step === 4 && (
                                 <motion.div
-                                    key="step5"
+                                    key="step4success"
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     className="text-center py-8"
@@ -425,24 +403,21 @@ export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalPr
                                         <Check size={40} className="text-[#4CBBB9]" />
                                     </div>
                                     <h3 className="text-2xl font-bold text-[#1A1A2E] mb-2">
-                                        Group Created! 🎉
+                                        Group Live! 🎉
                                     </h3>
                                     <p className="text-[#3A5369]/70 mb-2">
-                                        Your {formData.subscription} group is ready.
+                                        Your {formData.subscription} group has been created successfully.
                                     </p>
                                     {formData.friends.filter(f => f).length > 0 && (
                                         <p className="text-sm text-[#4CBBB9] font-semibold mb-4">
                                             {formData.friends.filter(f => f).length} friend(s) will be notified
                                         </p>
                                     )}
-                                    <p className="text-sm text-[#3A5369]/50 mb-6">
-                                        We'll reach out to <span className="font-semibold">{formData.email || formData.phone}</span> when Subb Bay launches.
-                                    </p>
                                     <button
                                         onClick={resetAndClose}
                                         className="subbay-btn"
                                     >
-                                        Done
+                                        Go to Dashboard
                                     </button>
                                 </motion.div>
                             )}

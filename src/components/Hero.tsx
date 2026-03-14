@@ -3,12 +3,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Users, Sparkles } from "lucide-react";
-import CreateGroupModal from "./CreateGroupModal";
+import CreateGroupButton from "./CreateGroupButton";
 import { NetflixLogo, SpotifyLogo, CanvaLogo, AdobeLogo } from "./BrandLogos";
 
 export default function Hero() {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
     const brandIcons = [
         { name: "Netflix", Logo: NetflixLogo },
         { name: "Spotify", Logo: SpotifyLogo },
@@ -64,14 +62,9 @@ export default function Hero() {
                     transition={{ duration: 0.8, delay: 0.3 }}
                     className="flex flex-col sm:flex-row justify-center gap-4 items-center"
                 >
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="subbay-btn text-base px-8 py-3.5"
-                    >
-                        Create a Group
-                    </button>
-                    <a href="#waitlist" className="subbay-btn-outline text-base px-8 py-3.5">
-                        Join Waitlist
+                    <CreateGroupButton className="subbay-btn text-base px-8 py-3.5" />
+                    <a href="/#browse" className="subbay-btn-outline text-base px-8 py-3.5">
+                        Browse Groups
                     </a>
                 </motion.div>
 
@@ -95,9 +88,6 @@ export default function Hero() {
                     ))}
                 </motion.div>
             </div>
-
-            {/* Create Group Modal */}
-            <CreateGroupModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </section>
     );
 }

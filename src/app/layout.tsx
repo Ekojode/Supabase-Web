@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   description: "Join Subb Bay to share subscription costs for Netflix, Spotify, Adobe, and more with friends and family.",
 };
 
+import { Toaster } from 'sonner';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,6 +33,7 @@ export default function RootLayout({
         className={`${plusJakarta.variable} ${inter.variable} antialiased`}
       >
         {children}
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );
