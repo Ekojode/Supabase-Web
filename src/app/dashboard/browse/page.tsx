@@ -1,18 +1,15 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { CheckCircle2 } from 'lucide-react'
 
 export default async function BrowsePage() {
     const supabase = await createClient()
 
-    // 1. Authenticate User
     const { data: { user } } = await supabase.auth.getUser()
+    if (!user) redirect('/login')
 
-    if (!user) {
-        redirect('/login')
-    }
-
-    // 2. Fetch Open Groups
+    // Fetch open groups
     const { data: openGroups, error } = await supabase
         .from('groups')
         .select(`
@@ -21,6 +18,7 @@ export default async function BrowsePage() {
             total_slots,
             price_per_member,
             duration_months,
+            provider_id,
             subscriptions (
                 name,
                 description
@@ -33,6 +31,14 @@ export default async function BrowsePage() {
         `)
         .eq('status', 'open')
         .order('created_at', { ascending: false });
+
+    // Fetch this user's group memberships so we can flag groups they've joined
+    const { data: myMemberships } = await supabase
+        .from('group_members')
+        .select('group_id')
+        .eq('user_id', user.id);
+
+    const joinedGroupIds = new Set((myMemberships || []).map((m: any) => m.group_id));
 
     return (
         <div className="max-w-6xl mx-auto">
@@ -54,13 +60,18 @@ export default async function BrowsePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {openGroups && openGroups.length > 0 ? (
                     openGroups.map((group: any) => {
-                        // Using NextJS 15 count syntax extraction
                         const membersCount = group.group_members?.[0]?.count || 0;
                         const slotsLeft = group.total_slots - membersCount;
+                        const isOwner = group.provider_id === user.id;
+                        const hasJoined = joinedGroupIds.has(group.id);
+                        const isMember = isOwner || hasJoined;
 
                         return (
-                            <Link href={`/dashboard/groups/${group.id}`} key={group.id} className="bg-white border text-left border-gray-100 p-6 rounded-3xl hover:-translate-y-1 transition-transform shadow-sm flex flex-col h-full group">
-
+                            <Link
+                                href={`/dashboard/groups/${group.id}`}
+                                key={group.id}
+                                className="bg-white border text-left border-gray-100 p-6 rounded-3xl hover:-translate-y-1 transition-transform shadow-sm flex flex-col h-full group"
+                            >
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
                                         <h3 className="text-xl font-bold text-[#1A1A2E] mb-1">
@@ -82,9 +93,11 @@ export default async function BrowsePage() {
                                         {group.profiles?.full_name?.charAt(0) || 'U'}
                                     </div>
                                     <div>
-                                        <p className="text-xs text-[#3A5369]/60 font-medium">Hosted by</p>
+                                        <p className="text-xs text-[#3A5369]/60 font-medium">
+                                            {isOwner ? 'Your group' : 'Hosted by'}
+                                        </p>
                                         <p className="text-sm font-bold text-[#1A1A2E]">
-                                            {group.profiles?.full_name || 'Anonymous User'}
+                                            {isOwner ? 'You' : (group.profiles?.full_name || 'Anonymous')}
                                         </p>
                                     </div>
                                 </div>
@@ -96,9 +109,21 @@ export default async function BrowsePage() {
                                             {slotsLeft} slots left
                                         </span>
                                     </div>
-                                    <div className="bg-[#1A1A2E] hover:bg-[#2D2D44] text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm">
-                                        View & Join
-                                    </div>
+
+                                    {isMember ? (
+                                        <div className="flex items-center gap-2 bg-green-50 text-green-700 border border-green-100 px-4 py-2 rounded-xl text-sm font-semibold">
+                                            <CheckCircle2 size={15} />
+                                            {isOwner ? 'Your Group' : 'Joined'}
+                                        </div>
+                                    ) : slotsLeft <= 0 ? (
+                                        <div className="bg-gray-100 text-gray-400 px-5 py-2.5 rounded-xl text-sm font-semibold cursor-not-allowed">
+                                            Full
+                                        </div>
+                                    ) : (
+                                        <div className="bg-[#1A1A2E] hover:bg-[#2D2D44] text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm">
+                                            View &amp; Join
+                                        </div>
+                                    )}
                                 </div>
                             </Link>
                         )
@@ -109,7 +134,7 @@ export default async function BrowsePage() {
                             <span className="text-2xl">🔍</span>
                         </div>
                         <h3 className="text-lg font-bold text-[#1A1A2E] mb-2">No active groups found</h3>
-                        <p className="text-[#3A5369]/60 max-w-sm mx-auto mb-6">
+                        <p className="text-[#3A5369]/60 max-w-sm mx-auto">
                             There are currently no open groups looking for members. Check back later or start your own!
                         </p>
                     </div>

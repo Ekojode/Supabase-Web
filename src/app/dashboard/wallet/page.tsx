@@ -40,5 +40,5 @@ export default async function WalletPage() {
         if (txs) transactions = txs;
     }
 
-    return <WalletView wallet={wallet} transactions={transactions} />;
+    return <WalletView wallet={wallet} transactions={transactions} email={user.email || ""} />;
 }

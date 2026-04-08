@@ -17,7 +17,7 @@ export default async function DashboardLayout({
     return (
         <div className="min-h-screen bg-gray-50 flex">
             <DashboardSidebar user={user} />
-            <main className="flex-1 lg:ml-64 p-4 lg:p-8 relative w-full overflow-x-hidden">
+            <main className="flex-1 lg:ml-64 pt-14 lg:pt-0 p-4 lg:p-8 relative w-full overflow-x-hidden">
                 {children}
             </main>
         </div>

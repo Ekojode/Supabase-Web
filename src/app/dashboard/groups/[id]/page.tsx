@@ -63,6 +63,15 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
 
     const isProvider = group.provider_id === user.id
 
+    // 4. Fetch Wallet Balance
+    let { data: wallet } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', user.id)
+        .single()
+    
+    const walletBalance = Number(wallet?.balance || 0);
+
     // ==========================================
     // MEMBER VIEW RETURN
     // ==========================================
@@ -146,13 +155,18 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
                                     <div className="w-12 h-12 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center mx-auto mb-3">
                                         <Clock size={24} />
                                     </div>
-                                    <p className="text-sm font-bold text-white mb-2">Payment Required</p>
-                                    <p className="text-xs text-white/60 mb-4">You must commit to Escrow before the Provider's credentials are revealed to you.</p>
-                                    <PaymentProcessor 
-                                        groupId={group.id} 
-                                        membershipId={membership?.id || ''} 
-                                        amount={group.price_per_member} 
-                                        duration={group.duration_months} 
+                                    <p className="text-sm font-bold text-white mb-1">Vault Locked</p>
+                                    <p className="text-xs text-white/50 mb-5">
+                                        Commit to escrow to unlock the shared credentials.
+                                    </p>
+                                    <PaymentProcessor
+                                        groupId={group.id}
+                                        membershipId={membership?.id || ''}
+                                        amount={group.price_per_member}
+                                        duration={group.duration_months}
+                                        email={user.email || ""}
+                                        walletBalance={walletBalance}
+                                        subscriptionName={(group.subscriptions as any)?.name}
                                     />
                                 </div>
                             )}
