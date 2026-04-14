@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Check, X, ChevronLeft, ChevronRight, Users, Shield, Zap } from "lucide-react";
 import { NetflixLogo, SpotifyLogo, YoutubeLogo, AdobeLogo, CanvaLogo, NotionLogo } from "./BrandLogos";
@@ -89,37 +90,20 @@ export default function BrowseGroups() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
+    const router = useRouter();
     const handleReserve = async (appName: string) => {
         setIsLoading(true);
         setError("");
 
         try {
-            const currentApp = APPS.find(a => a.name === appName);
-            const slots = currentApp?.slots.match(/\d+/) ? parseInt(currentApp.slots.match(/\d+/)![0]) : 4;
-
-            const response = await fetch('/api/waitlist', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    service_name: appName,
-                    slots: slots,
-                    duration: duration
-                }),
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    window.location.href = '/login';
-                    return;
-                }
-                const data = await response.json();
-                throw new Error(data.error || 'Something went wrong');
-            }
-
-            setSubmitted([...submitted, appName]);
+            // Encode the intent: create a group for this app with this duration
+            const nextPath = `/dashboard?action=create&service=${encodeURIComponent(appName)}&duration=${duration}`;
+            const loginUrl = `/login?next=${encodeURIComponent(nextPath)}`;
+            
+            router.push(loginUrl);
             setReserveModal(null);
         } catch (err: any) {
-            setError(err.message || 'Failed to reserve spot. Please try again.');
+            setError(err.message || 'Failed to redirect. Please try again.');
         } finally {
             setIsLoading(false);
         }

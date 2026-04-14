@@ -8,6 +8,10 @@ import { NetflixLogo, SpotifyLogo, YoutubeLogo, AdobeLogo, CanvaLogo, GenericSub
 interface CreateGroupModalProps {
     isOpen: boolean;
     onClose: () => void;
+    initialData?: {
+        subscription?: string;
+        duration?: number;
+    };
 }
 
 const SUBSCRIPTION_OPTIONS = [
@@ -19,16 +23,18 @@ const SUBSCRIPTION_OPTIONS = [
     { name: "Other", Logo: GenericSubIcon, price: "Custom" },
 ];
 
-export default function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
+export default function CreateGroupModal({ isOpen, onClose, initialData }: CreateGroupModalProps) {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+
+    // Initialize state with initialData if provided
     const [formData, setFormData] = useState({
-        subscription: "",
+        subscription: initialData?.subscription || "",
         customName: "",
-        price: "",
-        duration: 6,
+        price: initialData?.subscription ? (SUBSCRIPTION_OPTIONS.find(s => s.name === initialData.subscription)?.price || "") : "",
+        duration: initialData?.duration || 6,
         slots: 4,
         friends: [""],
     });

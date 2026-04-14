@@ -57,6 +57,7 @@ function LoginFormContent() {
                 </div>
 
                 <form action={handleSubmit} className="space-y-6">
+                    <input type="hidden" name="next" value={searchParams.get('next') || ''} />
                     {displayError && (
                         <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100">
                             {displayError}

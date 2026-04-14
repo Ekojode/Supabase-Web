@@ -6,9 +6,8 @@ import { createClient } from '@/utils/supabase/server'
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
+    const nextPath = (formData.get('next') as string) || '/dashboard'
 
-    // type-casting here for convenience
-    // in practice, you should validate your inputs
     const data = {
         email: formData.get('email') as string,
         password: formData.get('password') as string,
@@ -17,15 +16,16 @@ export async function login(formData: FormData) {
     const { error } = await supabase.auth.signInWithPassword(data)
 
     if (error) {
-        redirect('/login?error=Invalid email or password')
+        redirect(`/login?error=Invalid email or password&next=${encodeURIComponent(nextPath)}`)
     }
 
     revalidatePath('/', 'layout')
-    redirect('/dashboard')
+    redirect(nextPath)
 }
 
 export async function signup(formData: FormData) {
     const supabase = await createClient()
+    const nextPath = (formData.get('next') as string) || '/dashboard'
 
     const data = {
         email: formData.get('email') as string,
@@ -40,11 +40,11 @@ export async function signup(formData: FormData) {
     const { error } = await supabase.auth.signUp(data)
 
     if (error) {
-        redirect(`/login?error=${encodeURIComponent(error.message)}`)
+        redirect(`/login?error=${encodeURIComponent(error.message)}&next=${encodeURIComponent(nextPath)}`)
     }
 
     revalidatePath('/', 'layout')
-    redirect('/dashboard') // Or to a 'check email' page if email confirmation is turned on
+    redirect(nextPath) // Or to a 'check email' page if email confirmation is turned on
 }
 
 export async function logout() {

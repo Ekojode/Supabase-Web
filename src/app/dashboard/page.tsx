@@ -2,7 +2,14 @@ import { createClient } from '@/utils/supabase/server'
 import CreateGroupButton from '@/components/CreateGroupButton'
 import Link from 'next/link'
 
-export default async function DashboardPage() {
+export default async function DashboardPage(props: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+    const searchParams = await props.searchParams;
+    const action = searchParams.action;
+    const initialService = searchParams.service as string | undefined;
+    const initialDuration = searchParams.duration ? parseInt(searchParams.duration as string) : undefined;
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -51,7 +58,11 @@ export default async function DashboardPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <CreateGroupButton className="bg-[#1A1A2E] hover:bg-[#2D2D44] text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm" />
+                    <CreateGroupButton 
+                        className="bg-[#1A1A2E] hover:bg-[#2D2D44] text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm" 
+                        autoOpen={action === 'create'}
+                        initialData={{ subscription: initialService, duration: initialDuration }}
+                    />
                 </div>
             </div>
 
@@ -86,7 +97,9 @@ export default async function DashboardPage() {
                     ) : (
                         <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                             <p className="text-[#3A5369]/60 text-sm mb-4">You aren't managing any groups yet.</p>
-                            <CreateGroupButton />
+                            <CreateGroupButton 
+                                initialData={{ subscription: initialService, duration: initialDuration }}
+                            />
                         </div>
                     )}
                 </div>
