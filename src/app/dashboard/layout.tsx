@@ -14,9 +14,18 @@ export default async function DashboardLayout({
         redirect('/login')
     }
 
+    // Fetch user profile to check admin status (handle missing column gracefully)
+    const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single()
+    
+    const isAdmin = !profileError && profile ? !!profile.is_admin : false
+
     return (
         <div className="min-h-screen bg-gray-50 flex">
-            <DashboardSidebar user={user} />
+            <DashboardSidebar user={user} isAdmin={isAdmin} />
             <main className="flex-1 lg:ml-64 pt-14 lg:pt-0 p-4 lg:p-8 relative w-full overflow-x-hidden">
                 {children}
             </main>

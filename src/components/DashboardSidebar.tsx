@@ -3,11 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Compass, Wallet, LogOut, Settings, Menu, X } from "lucide-react";
+import { LayoutDashboard, Compass, Wallet, LogOut, Settings, Menu, X, Shield } from "lucide-react";
 import SubbBayLogo from "@/components/SubbBayLogo";
 import { logout } from "@/app/login/actions";
 
-export default function DashboardSidebar({ user }: { user: any }) {
+export default function DashboardSidebar({ user, isAdmin }: { user: any; isAdmin?: boolean }) {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -17,6 +17,10 @@ export default function DashboardSidebar({ user }: { user: any }) {
         { name: "Wallet", href: "/dashboard/wallet", icon: Wallet },
         { name: "Settings", href: "/dashboard/settings", icon: Settings },
     ];
+
+    if (isAdmin) {
+        navItems.push({ name: "Admin Panel", href: "/dashboard/admin", icon: Shield });
+    }
 
     const closeSidebar = () => setIsOpen(false);
 
